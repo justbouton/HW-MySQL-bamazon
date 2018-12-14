@@ -3,14 +3,14 @@ Table = require('cli-table2');
 var displayTable = function() {
 
     this.table = new Table({
-        head: ['Categories'],
+        head: ['ID', 'Categories'],
     });
 
     this.displayInventoryTable = function(results) {
     	this.results = results;
 	    for (var i=0; i <this.results.length; i++) {
 	        this.table.push(
-	            [results[i].category] );
+	            [results[i].id, results[i].category] );
 	    }
     	console.log('\n' + this.table.toString());
 	};

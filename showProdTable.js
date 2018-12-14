@@ -3,7 +3,7 @@ Table = require('cli-table2');
 var displayTable = function() {
 
     this.table = new Table({
-        head: ['Item ID', 'Product Name', 'Category', 'Price'],
+        head: ['ID', 'Product Name', 'Category', 'Price'],
     });
 
     this.displayInventoryTable = function(results) {

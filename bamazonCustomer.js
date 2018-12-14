@@ -1,7 +1,7 @@
 // Require MySQL, Inquirer, CLI-table2, showTable to beautify the reponse
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-const table = require('cli-table2');
+// const table = require('cli-table2'); Required for showProTable and showCatTable
 const showProdTable = require('./showProdTable.js');
 const showCatTable = require('./showCatTable.js');
 
@@ -25,19 +25,19 @@ con.connect(function(err){
 
 console.log('\nWelcome to bAmazon! \n')
 
-// UPGRADE user sign in
-
+// UPGRADE user login
 
 function displayAllProdTable() {
 	var display = new showProdTable();
 	con.query('SELECT * FROM products', function(err, res){
 		display.displayInventoryTable(res);
-	});
+        displayIndvCat() // What items are you interested in purchasing today?
+    });
 };
 
 function displayCatTable() {
     var display = new showCatTable();
-    con.query('SELECT category FROM products GROUP BY category', function(err, res){
+    con.query('SELECT * FROM products GROUP BY category', function(err, res){
         display.displayInventoryTable(res);
     })
 };
@@ -45,6 +45,7 @@ function displayCatTable() {
 function displayCatGroup() {
 con.query('SELECT category FROM products GROUP BY category', function(err, res){
         if (err) throw err;
+displayAllProdTable(choice)
     inquire({     // inquire prompt for item to purchase
             name: "choice",
             type: "rawlist",
@@ -65,40 +66,48 @@ con.query('SELECT category FROM products GROUP BY category', function(err, res){
 };
 
 
-function displayIndvCat(choice) {
-    con.query('SELECT * FROM products where category = "' + choice + '" ORDER BY name', function(err, res){
-            if (err) throw err;
-        inquire({     
-            name: "choice",
-            type: "rawlist",
-            message: "What item would you like to purchase??",
-            // TODO add price next to item
-            choices: function() {
-                var choiceArr = [];
-                for (var i = 0; i < res.length; i++) {
-                    choiceArr.push(res[i].name)
-                };
-                return choiceArr;
-            }
-        })
+function displayIndvCat() {
+    // con.query('SELECT * FROM products where category = "' + choice + '" ORDER BY name', function(err, res){
+    //         if (err) throw err;
+    inquire([
+        {
+            name: "id",
+            type: "number",
+            message: "Please enter the ID of the item that you wish to purchase?"
+        },
+        {
+            name: "quantity",
+            type: "number",
+            message: "How many would you like to buy?"
+        }
+    ])
         .then(function(res){
-            inquire({
-                name: "purchase",
-                type: "rawlist",
-                message: "Are you sure you want to purchase " + res.choice + "?",
-                choices: ["Yes", "No"]
-            })
-            .then(function(res){
-                if (res.purchase === "Yes") {
-                    console.log('Thank you for your purchase!')
-                    start();
-            } else {
+            // console.log("86: " + res);
+            console.log("87: " + res.id);
+            console.log("88: " + res.quantity);
+
+// TODO Add logic to compare user choice to items available, confirm or reject purchase
+
+// You would like to purchase id pull from array of products.
+
+
+            // inquire({
+            //     name: "purchase",
+            //     type: "rawlist",
+            //     message: "Are you sure you want to purchase " + res.choice + "?",
+            //     choices: ["Yes", "No"]
+            // })
+            // .then(function(res){
+            //     if (res.purchase === "Yes") {
+            //         console.log('Thank you for your purchase!')
+            //         start();
+            // } else {
                 // UPGRADE continue shopping or start()
                 start()
-            };
+            // };
             })
-        })
-    });
+        // })
+    // });
 };
 
 function endMySql() {
@@ -113,12 +122,15 @@ function start() {
             name: "selectDept",
             type: "rawlist",
             message: "Would you like to do shop or exit?",
-            choices: [ "Shop", "Exit" ]
+            choices: [ "SHOP", "EXIT" ]
         })
         .then(function(res) {
+            var answer = res.selectDept.toUpperCase().trim()
             // If shop, show table of dept selected
-            if (res.selectDept === "Shop") {
-                displayCatGroup();
+            if (answer === "SHOP") {
+                // displayCatGroup();
+                console.log('Available products')
+                displayAllProdTable();
         } else {
             endMySql()
         };
