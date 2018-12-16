@@ -5,7 +5,7 @@ const inquirer = require('inquirer');
 const showProdTable = require('./showProdTable.js');
 const showCatTable = require('./showCatTable.js');
 
-const inquire = inquirer.prompt
+const inquire = inquirer.prompt;
 
 // Create mysql connection
 const con = mysql.createConnection({
@@ -23,101 +23,130 @@ con.connect(function(err){
     };
 });
 
-console.log('\nWelcome to bAmazon! \n')
+console.log('\nWelcome to bAmazon!');
 
 // UPGRADE user login
 
-function displayAllProdTable() {
-	var display = new showProdTable();
-	con.query('SELECT * FROM products', function(err, res){
-		display.displayInventoryTable(res);
-        displayIndvCat() // What items are you interested in purchasing today?
-    });
-};
-
-function displayCatTable() {
-    var display = new showCatTable();
-    con.query('SELECT * FROM products GROUP BY category', function(err, res){
-        display.displayInventoryTable(res);
-    })
-};
-
-function displayCatGroup() {
-con.query('SELECT category FROM products GROUP BY category', function(err, res){
-        if (err) throw err;
-displayAllProdTable(choice)
-    inquire({     // inquire prompt for item to purchase
-            name: "choice",
-            type: "rawlist",
-            message: "What would you like to browse?",
-            choices: function() {
-                var choiceArr = [];
-                for (var i = 0; i < res.length; i++) {
-                    choiceArr.push(res[i].category)
-                }
-                return choiceArr;
-            }
-        })
-        .then(function(res){
-            let choice = res.choice
-            displayIndvCat(choice)
-        });
-    });
-};
-
-
-function displayIndvCat() {
-    // con.query('SELECT * FROM products where category = "' + choice + '" ORDER BY name', function(err, res){
-    //         if (err) throw err;
-    inquire([
-        {
-            name: "id",
-            type: "number",
-            message: "Please enter the ID of the item that you wish to purchase?"
-        },
-        {
-            name: "quantity",
-            type: "number",
-            message: "How many would you like to buy?"
-        }
-    ])
-        .then(function(res){
-            // console.log("86: " + res);
-            console.log("87: " + res.id);
-            console.log("88: " + res.quantity);
-
-// TODO Add logic to compare user choice to items available, confirm or reject purchase
-
-// You would like to purchase id pull from array of products.
-
-
-            // inquire({
-            //     name: "purchase",
-            //     type: "rawlist",
-            //     message: "Are you sure you want to purchase " + res.choice + "?",
-            //     choices: ["Yes", "No"]
-            // })
-            // .then(function(res){
-            //     if (res.purchase === "Yes") {
-            //         console.log('Thank you for your purchase!')
-            //         start();
-            // } else {
-                // UPGRADE continue shopping or start()
-                start()
-            // };
-            })
-        // })
-    // });
-};
 
 function endMySql() {
     console.log('\n\nThank you for shopping bAmazon!\n\n')
     con.end(); // Terminates MySQL connection
 }
 
+function displayAllProdTable() {
+	var display = new showProdTable();
+	con.query('SELECT * FROM products', function(err, res){
+		display.displayInventoryTable(res);
+        purchaseInventory(); // What items are you interested in purchasing today?
+    });
+};
+
+function purchaseInventory() {
+    inquire([
+        {
+            name: "id",
+            type: "number",
+            message: "Please enter the ID of the item that you wish to purchase?",
+            validate: function(value) { // UPGRADE con.query id.length replace 12 below.
+                if ((value <= 0) || (value > 12)) {
+                    return 'Enter a number between 1-12'
+                } else {
+                    var valid = !isNaN(parseFloat(value));
+                    return valid || "Please enter a number";
+                }
+            },
+        },
+        {
+            name: "quantity",
+            type: "number",
+            message: "How many would you like to buy?",
+            validate: function(value) {
+                if (value <= 0) {
+                    return 'Enter a number greater than 0'
+                } else {
+                    var valid = !isNaN(parseFloat(value));
+                    return valid || "Please enter a number";
+                }
+            },
+            // filter: Number
+        },
+        ])
+        .then(function(res){
+            var userChoice = res.id;
+            var userQuantity = res.quantity;
+            // console.log("\nuserChoice: " + userChoice);
+            console.log("\nQuantity selected: " + userQuantity);
+
+                // Get mysql availablity of the item number selected
+                con.query('SELECT * FROM products where id = ' + userChoice, function(err, res){
+                const itemName = res[0].name;
+                const itemPrice = res[0].price;
+                const itemAvailible = res[0].quantity;
+                console.log("\nCurrent inventory: " + itemAvailible + "\n");
+                const totalCost = Math.floor(itemPrice * userQuantity);
+
+                // If quantity is 0 
+                if ((userQuantity >= itemAvailible) || (itemAvailible === 0)) {
+                    console.log('\nInsufficient quantity on hand\n');
+                    purchaseInventory();
+                } else {
+
+
+// Confirm purchase
+                    inquire([
+                        {
+                            name: "confirm",
+                            type: "rawlist",
+                            message: "Are you sure you want to purchase " + itemName + " totaling $" + totalCost + "?",
+                            choices: [ "YES", "NO" ],
+                        },
+                    ])
+                    .then(function(res) {
+                        var yesNo = res.confirm;
+                            // If shop, show table of dept selected
+                            if (yesNo === "YES") {
+                                // Compare user userQuantity to itemAvailable, confirm or reject purchase pending item availability.
+                                    // TODO UPDATE MySQL
+                                    var updateItem = itemAvailible - userQuantity;
+                                    console.log('\nUpdate DB quantity to: ' + updateItem); 
+                                    itemPurchased(itemName, itemPrice, userChoice, totalCost, updateItem); 
+                        } else {
+                            purchaseInventory()
+                        };
+            
+                    })  
+                }
+        })
+    });
+};
+
+// ItemPurchased, delete from MySQL
+function itemPurchased(itemName, itemPrice, userChoice, totalCost, updateItem) {
+    // console.log("116 updateItem: " + updateItem);
+    // console.log("117 userChoice: " + userChoice);
+    // console.log("118 itemName: " + itemName);
+    // console.log("119 itemPrice: " + itemPrice);
+    // totalCost = Math.floor(itemPrice * userQuantity);
+    con.query(
+        'UPDATE products SET ? WHERE ?',
+        [
+            {
+                quantity: updateItem
+            },
+            {
+                id: userChoice
+            }
+        ]) // TODO total cost 
+        console.log('\nOrder placed!\n');
+        console.log('\nThank you for ordering "' + itemName + '"\n')
+        console.log(' -- Your total is: $' + totalCost + ' --\n')
+        start();
+};
+
 
 // Start function
 function start() {
+    console.log("")
     inquire({     
             name: "selectDept",
             type: "rawlist",
@@ -129,7 +158,7 @@ function start() {
             // If shop, show table of dept selected
             if (answer === "SHOP") {
                 // displayCatGroup();
-                console.log('Available products')
+                console.log('\nAvailable products')
                 displayAllProdTable();
         } else {
             endMySql()
@@ -138,6 +167,3 @@ function start() {
 };
 
 start()
-
-
-// // this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
