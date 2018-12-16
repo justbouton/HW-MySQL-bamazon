@@ -1,3 +1,3 @@
 ### **Technologies:** Node.js & MySQL
 
-**Overview:** This app is an e-store with list of availble items. You will be able to add and subtract items from the store, create tables, show * from product id, description, quanity and price. In addition the customer will be able to add items to their cart, see a subtotal, check out, if low stock, display insufficient quantity. 
+**Overview:** This app is a mock e-store. Upon start you are prompted to SHOP or EXIT. In SHOP you are able to see items for sale, select an item plus quanity for purchase then confirm purchase. Once a purchase is complete the bAmazonDB MySQL database is updated to reflect changes. If low stock, insufficient quantity is displayed even before purchase confirmation.
