@@ -1,5 +1,10 @@
-### 
-
 ### **Technologies:** Node.js & MySQL
 
-### **Overview:** This app is an e-store with list of availble items. You will be able to add and subtract items from the store, create tables, show * from product id, description, quanity and price. In addition the customer will be able to add items to their cart, see a subtotal, check out, if customer account is low, display insufficient funds. 
+**Overview:** This app is a mock e-store. Upon start you are prompted to SHOP or EXIT. In SHOP you are able to see items for sale, select an item and quanity before confirming purchase. If low stock, insufficient quantity is displayed even before purchase confirmation. Once a purchase is complete the bAmazonDB MySQL database is updated to reflect changes. 
+
+### How to use:
+* Create MySQL database with bAmazonDB.mysql.
+* CLI the bamazon directory type: npm init -y; npm i mysql; npm i inquirer;
+* CLI type node bamazonCustomer.js
+
+Navigate the program with numbers and confirm with enter. To end CTRL + C
