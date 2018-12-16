@@ -83,7 +83,7 @@ function purchaseInventory() {
                 const itemPrice = res[0].price;
                 const itemAvailible = res[0].quantity;
                 console.log("\nCurrent inventory: " + itemAvailible + "\n");
-                const totalCost = Math.floor(itemPrice * userQuantity);
+                const totalCost = Math.round((itemPrice * userQuantity) * 100) / 100;
 
                 // If quantity is 0 
                 if ((userQuantity >= itemAvailible) || (itemAvailible === 0)) {
