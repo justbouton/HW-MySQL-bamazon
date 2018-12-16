@@ -3,7 +3,7 @@ const mysql = require('mysql');
 const inquirer = require('inquirer');
 // const table = require('cli-table2'); Required for showProTable and showCatTable
 const showProdTable = require('./showProdTable.js');
-const showCatTable = require('./showCatTable.js');
+// const showCatTable = require('./showCatTable.js');
 
 const inquire = inquirer.prompt;
 
@@ -106,7 +106,7 @@ function purchaseInventory() {
                             // If shop, show table of dept selected
                             if (yesNo === "YES") {
                                 // Compare user userQuantity to itemAvailable, confirm or reject purchase pending item availability.
-                                    // TODO UPDATE MySQL
+                                    // UPDATE MySQL
                                     var updateItem = itemAvailible - userQuantity;
                                     console.log('\nUpdate DB quantity to: ' + updateItem); 
                                     itemPurchased(itemName, itemPrice, userChoice, totalCost, updateItem); 
@@ -136,7 +136,7 @@ function itemPurchased(itemName, itemPrice, userChoice, totalCost, updateItem) {
             {
                 id: userChoice
             }
-        ]) // TODO total cost 
+        ]) 
         console.log('\nOrder placed!\n');
         console.log('\nThank you for ordering "' + itemName + '"\n')
         console.log(' -- Your total is: $' + totalCost + ' --\n')
